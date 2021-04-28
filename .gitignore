@@ -14,9 +14,13 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# Program binary
+vineguard
+
 #####################
 ## EDITOR SPECIFIC ##
 #####################
 
 /.idea/*
 *.iml
+
