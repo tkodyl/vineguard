@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tkodyl/vineguard/configuration"
 )
 
 type FilePath struct {
@@ -20,28 +22,30 @@ func main() {
 	client := http.Client{}
 	phpSessionCookie := http.Cookie{Name: "PHPSESSID", Value: "msl9tkd9p7cifcsnumsnit9bn3"}
 
-	statusCode, err := loginRequest(&client, phpSessionCookie)
+	config := configuration.GetConfig()
+
+	statusCode, err := loginRequest(&client, phpSessionCookie, config)
 	if err != nil {
 		fmt.Println("Error during login, message:", err.Error())
 		return
 	}
 	fmt.Println(statusCode)
 
-	filePath, err := dataCreationRequest(&client, phpSessionCookie)
+	filePath, err := dataCreationRequest(&client, phpSessionCookie, config.Server.Url)
 	if err != nil {
 		fmt.Println("Error during data creation, message:", err.Error())
 		return
 	}
-	fileContent, err := retrieveData(&client, phpSessionCookie, filePath)
+	fileContent, err := retrieveData(&client, phpSessionCookie, filePath, config.Server.Url)
 	fmt.Println(fileContent)
 }
 
-func loginRequest(client *http.Client, cookie http.Cookie) (string, error) {
+func loginRequest(client *http.Client, cookie http.Cookie, config configuration.Config) (string, error) {
 	form := url.Values{}
-	form.Add("username", "xxx")
-	form.Add("password", "yyy")
+	form.Add("username", config.Server.Credentails.Username)
+	form.Add("password", config.Server.Credentails.Password)
 
-	req, err := http.NewRequest("POST", "http://portalmeteo.pl/index/login", strings.NewReader(form.Encode()))
+	req, err := http.NewRequest("POST", config.Server.Url+"/index/login", strings.NewReader(form.Encode()))
 	req.AddCookie(&cookie)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Host", "www.portalmeteo.pl")
@@ -56,7 +60,7 @@ func loginRequest(client *http.Client, cookie http.Cookie) (string, error) {
 	return resp.Status, nil
 }
 
-func dataCreationRequest(client *http.Client, cookie http.Cookie) (string, error) {
+func dataCreationRequest(client *http.Client, cookie http.Cookie, serverAddress string) (string, error) {
 	currentTime := time.Now()
 	todaysDate := currentTime.Format("2006-01-02")
 	sevenDaysBefore := currentTime.AddDate(0, 0, -7).Format("2006-01-02")
@@ -69,7 +73,7 @@ func dataCreationRequest(client *http.Client, cookie http.Cookie) (string, error
 	form.Add("date_start", sevenDaysBefore)
 	form.Add("date_end", todaysDate)
 
-	req, err := http.NewRequest("POST", "http://www.portalmeteo.pl/ajax/new-export", strings.NewReader(form.Encode()))
+	req, err := http.NewRequest("POST", serverAddress+"/ajax/new-export", strings.NewReader(form.Encode()))
 
 	if err != nil {
 		return "", errors.New("Request is not valid at all")
@@ -88,8 +92,8 @@ func dataCreationRequest(client *http.Client, cookie http.Cookie) (string, error
 	return filePath.Filename, nil
 }
 
-func retrieveData(client *http.Client, cookie http.Cookie, filePath string) (string, error) {
-	req, err := http.NewRequest("GET", "http://www.portalmeteo.pl"+filePath, nil)
+func retrieveData(client *http.Client, cookie http.Cookie, filePath string, serverAddress string) (string, error) {
+	req, err := http.NewRequest("GET", serverAddress+filePath, nil)
 	if err != nil {
 		return "", errors.New("Request is not valid at all")
 	}
