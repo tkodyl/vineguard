@@ -1,0 +1,5 @@
+server:
+  credentials:
+    username: "xxx"
+    password: "xxx"
+  url: "http://portalmeteo.pl"

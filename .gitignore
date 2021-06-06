@@ -24,3 +24,9 @@ vineguard
 /.idea/*
 *.iml
 
+#####################
+##   APP RELATED   ##
+#####################
+
+# config.yml
+
