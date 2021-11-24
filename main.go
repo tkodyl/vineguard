@@ -42,8 +42,8 @@ func main() {
 
 func loginRequest(client *http.Client, cookie http.Cookie, config configuration.Config) (string, error) {
 	form := url.Values{}
-	form.Add("username", config.Server.Credentails.Username)
-	form.Add("password", config.Server.Credentails.Password)
+	form.Add("username", config.Server.Credentials.Username)
+	form.Add("password", config.Server.Credentials.Password)
 
 	req, err := http.NewRequest("POST", config.Server.Url+"/index/login", strings.NewReader(form.Encode()))
 	req.AddCookie(&cookie)

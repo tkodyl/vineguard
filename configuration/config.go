@@ -9,7 +9,7 @@ import (
 
 type Config struct {
 	Server struct {
-		Credentails struct {
+		Credentials struct {
 			Username string `yaml:"username"`
 			Password string `yaml:"password"`
 		} `yaml:"credentials"`
