@@ -30,5 +30,6 @@ func GetConfig() Config {
 	if err != nil {
 		log.Fatalf("Decode of config failed")
 	}
+	log.Println("Found application configuration, server:", config.Server.Url, "and user:", config.Server.Credentials.Username)
 	return config
 }
