@@ -21,32 +21,62 @@ func PrepareLines(rawCsvLines string) []string {
 func ToRecords(csvLines []string) ([]WeatherRecord, error) {
 	var weatherRecords []WeatherRecord
 	var lineItems []string
+	var prevRecord WeatherRecord
 	for _, line := range csvLines {
 		lineItems = strings.Split(line, ";")
 		var rec WeatherRecord
 		rec.Date = lineItems[0]
 		rec.Time = lineItems[1]
-		parsedTemperature, err := strconv.ParseFloat(lineItems[2], 32)
+		temperature, err := getTemperature(lineItems)
 		if err != nil {
-			log.Println("Cannot parse temperature")
-			return nil, err
+			log.Printf("Cannot parse temperature line %s: %s, defaulting ...", line, err.Error())
+			temperature = prevRecord.Temperature
 		}
-		rec.Temperature = float32(parsedTemperature)
+		rec.Temperature = temperature
 
-		parsedHumidity, err := strconv.ParseUint(lineItems[3], 10, 8)
+		humidity, err := getHumidity(lineItems)
 		if err != nil {
-			log.Println("Cannot parse humidity")
-			return nil, err
+			log.Printf("Cannot parse humidity: %s: %s, defaulting ...", line, err.Error())
+			humidity = prevRecord.Humidity
 		}
-		rec.Humidity = uint8(parsedHumidity)
+		rec.Humidity = humidity
 
-		parsedRain, err := strconv.ParseFloat(lineItems[4], 8)
+		rain, err := getRain(lineItems)
 		if err != nil {
-			log.Println("Cannot parse rain")
-			return nil, err
+			log.Printf("Cannot parse rain: %s: %s, defaulting ...", line, err.Error())
+			rain = prevRecord.Rain
 		}
-		rec.Rain = float32(parsedRain)
+		rec.Rain = rain
+
+		prevRecord = rec
 		weatherRecords = append(weatherRecords, rec)
 	}
 	return weatherRecords, nil
+}
+
+func getTemperature(lineItems []string) (float32, error) {
+	const temperatureIndex = 2
+	parsedTemperature, err := strconv.ParseFloat(lineItems[temperatureIndex], 32)
+	if err != nil {
+		return 0, err
+	}
+	return float32(parsedTemperature), nil
+}
+
+func getHumidity(lineItems []string) (uint8, error) {
+	const humidityIndex = 3
+	parsedHumidity, err := strconv.ParseUint(lineItems[humidityIndex], 10, 8)
+	if err != nil {
+		return 0, err
+	}
+	return uint8(parsedHumidity), nil
+}
+
+func getRain(lineItems []string) (float32, error) {
+	const rainIndex = 4
+	parsedRain, err := strconv.ParseFloat(lineItems[rainIndex], 8)
+	if err != nil {
+		return 0, err
+	}
+	return float32(parsedRain), nil
 }

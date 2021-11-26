@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/tkodyl/vineguard/configuration"
 	"github.com/tkodyl/vineguard/data/portal_meteo/collector"
+	"github.com/tkodyl/vineguard/data/portal_meteo/parser"
 	"log"
-	"strings"
 )
 
 func main() {
@@ -13,5 +12,9 @@ func main() {
 	collector := collector.NewCollector(&config)
 	fileContent, _ := collector.GetDataFromPortalMeteo()
 	log.Println(fileContent)
-	fmt.Println(strings.Fields(fileContent)[1:])
+	records, err := parser.ToRecords(parser.PrepareLines(fileContent))
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(records)
 }
