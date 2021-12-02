@@ -1,4 +1,6 @@
-package collector
+// Package pm implements classes and methods needed for collecting data from portalmeteo.pl.
+// "pm" stands for portal meteo.
+package pm
 
 import (
 	"encoding/json"
@@ -29,7 +31,8 @@ func NewCollector(config *configuration.Config) Collector {
 	return Collector{client: client, sessionCookie: sessionCookie, config: config}
 }
 
-func (coll *Collector) GetDataFromPortalMeteo() (string, error) {
+// FetchData perform several http request and return csv with weather records
+func (coll *Collector) FetchData() (string, error) {
 	log.Println("Attempt to login to", coll.config.Server.Url)
 	_, err := coll.loginRequest()
 	if err != nil {
