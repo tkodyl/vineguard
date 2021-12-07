@@ -14,12 +14,12 @@ type WeatherRecord struct {
 	Rain        float32 `json:"rain"`
 }
 
-func PrepareLines(rawCsvLines string) []string {
+func DeleteHeaderLine(rawCsvLines string) []string {
 	return strings.Fields(rawCsvLines)[1:]
 }
 
-func ToRecords(csvLines []string) ([]WeatherRecord, error) {
-	var weatherRecords []WeatherRecord
+func ToRecords(csvLines []string) ([]*WeatherRecord, error) {
+	var weatherRecords []*WeatherRecord
 	var lineItems []string
 	var prevRecord WeatherRecord
 	for _, line := range csvLines {
@@ -49,7 +49,7 @@ func ToRecords(csvLines []string) ([]WeatherRecord, error) {
 		rec.Rain = rain
 
 		prevRecord = rec
-		weatherRecords = append(weatherRecords, rec)
+		weatherRecords = append(weatherRecords, &rec)
 	}
 	return weatherRecords, nil
 }
