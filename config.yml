@@ -1,5 +1,8 @@
 server:
   credentials:
     username: "xxx"
-    password: "xxx"
+    password: "yyy"
   url: "http://portalmeteo.pl"
+elasticsearch:
+  url: "http://localhost:9200"
+  index: "meteo-data"

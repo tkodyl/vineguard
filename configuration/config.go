@@ -15,6 +15,10 @@ type Config struct {
 		} `yaml:"credentials"`
 		Url string `yaml:"url"`
 	} `yaml:"server"`
+	Elasticsearch struct {
+		Url   string `yaml:"url"`
+		Index string `yaml:"index"`
+	} `yaml:"elasticsearch"`
 }
 
 func GetConfig() Config {
