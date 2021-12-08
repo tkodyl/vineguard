@@ -2,16 +2,16 @@ package main
 
 import (
 	"github.com/tkodyl/vineguard/configuration"
-	"github.com/tkodyl/vineguard/data/collection/pm"
+	"github.com/tkodyl/vineguard/data/collection/portal_meteo"
 	"github.com/tkodyl/vineguard/data/storage/elasticsearch"
 	"log"
 )
 
 func main() {
 	config := configuration.GetConfig()
-	collector := pm.NewCollector(&config)
+	collector := portal_meteo.NewCollector(&config)
 	fileContent, _ := collector.FetchData()
-	records, err := pm.ToRecords(pm.DeleteHeaderLine(fileContent))
+	records, err := portal_meteo.ToRecords(portal_meteo.DeleteHeaderLine(fileContent))
 	if err != nil {
 		log.Fatal(err)
 	}

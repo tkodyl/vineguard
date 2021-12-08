@@ -1,4 +1,4 @@
-package pm
+package portal_meteo
 
 import (
 	"log"
@@ -16,8 +16,8 @@ func TestPrepareLines(t *testing.T) {
 
 func TestToRecordsShouldNotIssueErrorAndGiveCorrectRecords(t *testing.T) {
 	const expectedRecordCount = 3
-	date := "18/11/2021"
-	expectedFirstRecord := WeatherRecord{Date: date, Time: "00:00", Temperature: 5.1, Humidity: 94, Rain: 0}
+	date := "2021-11-18T00:00:00Z"
+	expectedFirstRecord := WeatherRecord{Date: date, Temperature: 5.1, Humidity: 94, Rain: 0}
 	rawCsv := []string{"18/11/2021;00:00;5.1;94;0;0;0;M", "18/11/2021;00:30;5.3;94;0;0;0;M", "18/11/2021;01:00;5.4;94;0.2;0;0;M"}
 	result, err := ToRecords(rawCsv)
 	if err != nil {
@@ -32,7 +32,7 @@ func TestToRecordsShouldNotIssueErrorAndGiveCorrectRecords(t *testing.T) {
 }
 
 func TestToRecordsWhenSecondRecordsFieldsAreEmpty(t *testing.T) {
-	secondWeatherRecord := WeatherRecord{Date: "18/11/2021", Time: "00:30", Temperature: float32(5.3), Humidity: uint8(94), Rain: float32(0)}
+	secondWeatherRecord := WeatherRecord{Date: "2021-11-18T00:30:00Z", Temperature: float32(5.3), Humidity: uint8(94), Rain: float32(0)}
 	incorrectRawCsv := []string{"18/11/2021;00:00;5.3;94;0;0;0;M", "18/11/2021;00:30;;;;;;", "18/11/2021;01:00;5.4;94;0.2;0;0;M"}
 	result, _ := ToRecords(incorrectRawCsv)
 	if *result[1] != secondWeatherRecord {
@@ -41,7 +41,7 @@ func TestToRecordsWhenSecondRecordsFieldsAreEmpty(t *testing.T) {
 }
 
 func TestToRecordsWhenSecondFieldsAreIncorrect(t *testing.T) {
-	expectedSecondRecord := WeatherRecord{Date: "18/11/2021", Time: "00:30", Temperature: float32(5.3), Humidity: uint8(94), Rain: float32(0)}
+	expectedSecondRecord := WeatherRecord{Date: "2021-11-18T00:30:00Z", Temperature: float32(5.3), Humidity: uint8(94), Rain: float32(0)}
 	incorrectRawCsv := []string{"18/11/2021;00:00;5.3;94;0;0;0;M", "18/11/2021;00:30;M;M;M;M;M;M", "18/11/2021;01:00;5.4;94;0.2;0;0;M"}
 	result, _ := ToRecords(incorrectRawCsv)
 	if *result[1] != expectedSecondRecord {
@@ -50,7 +50,7 @@ func TestToRecordsWhenSecondFieldsAreIncorrect(t *testing.T) {
 }
 
 func TestToRecordsShouldDefaultWhenIssueInFirstRecord(t *testing.T) {
-	expectedFirstRecord := WeatherRecord{Date: "18/11/2021", Time: "00:00", Temperature: float32(0), Humidity: uint8(0), Rain: float32(0)}
+	expectedFirstRecord := WeatherRecord{Date: "2021-11-18T00:00:00Z", Temperature: float32(0), Humidity: uint8(0), Rain: float32(0)}
 	incorrectRawCsv := []string{"18/11/2021;00:00;;;;;;", "18/11/2021;00:30;5.3;94;0;0;0;M", "18/11/2021;01:00;5.4;94;0.2;0;0;M"}
 	records, _ := ToRecords(incorrectRawCsv)
 	log.Println(records)

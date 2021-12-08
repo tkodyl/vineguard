@@ -1,4 +1,4 @@
-package pm
+package portal_meteo
 
 import (
 	"log"
@@ -8,7 +8,6 @@ import (
 
 type WeatherRecord struct {
 	Date        string  `json:"date"`
-	Time        string  `json:"time"`
 	Temperature float32 `json:"temperature"`
 	Humidity    uint8   `json:"humidity"`
 	Rain        float32 `json:"rain"`
@@ -19,14 +18,15 @@ func DeleteHeaderLine(rawCsvLines string) []string {
 }
 
 func ToRecords(csvLines []string) ([]*WeatherRecord, error) {
+	const dateIndex = 0
+	const timeIndex = 1
 	var weatherRecords []*WeatherRecord
 	var lineItems []string
 	var prevRecord WeatherRecord
 	for _, line := range csvLines {
 		lineItems = strings.Split(line, ";")
 		var rec WeatherRecord
-		rec.Date = lineItems[0]
-		rec.Time = lineItems[1]
+		rec.Date = FormatDate(lineItems[dateIndex], lineItems[timeIndex])
 		temperature, err := getTemperature(lineItems)
 		if err != nil {
 			log.Printf("Cannot parse temperature line %s: %s, defaulting ...", line, err.Error())
