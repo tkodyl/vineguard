@@ -1,6 +1,5 @@
-// Package pm implements classes and methods needed for collecting data from portalmeteo.pl.
-// "pm" stands for portal meteo.
-package pm
+// Package portal_meteo implements classes and methods needed for collecting data from portalmeteo.pl.
+package portal_meteo
 
 import (
 	"encoding/json"

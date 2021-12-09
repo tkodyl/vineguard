@@ -8,7 +8,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 	"github.com/tkodyl/vineguard/configuration"
-	"github.com/tkodyl/vineguard/data/collection/pm"
+	"github.com/tkodyl/vineguard/data/collection/portal_meteo"
 	"log"
 	"runtime"
 	"strings"
@@ -21,7 +21,7 @@ type Indexer struct {
 	countSuccessful uint64
 }
 
-func (indexer *Indexer) Do(records []*pm.WeatherRecord) {
+func (indexer *Indexer) Do(records []*portal_meteo.WeatherRecord) {
 	log.Printf("About to start of indexing %d\n", len(records))
 
 	bi, err := indexer.createBulkIndexer()
@@ -33,14 +33,15 @@ func (indexer *Indexer) Do(records []*pm.WeatherRecord) {
 	for _, record := range records {
 		data, err := json.Marshal(record)
 		if err != nil {
-			log.Fatalf("Cannot encode article from %s %s: %s", record.Date, record.Time, err)
+			log.Fatalf("Cannot encode article from %s: %s", record.Date, err)
 		}
 
 		err = bi.Add(
 			context.Background(),
 			esutil.BulkIndexerItem{
-				Action: "create", // index
-				Body:   bytes.NewReader(data),
+				Action:     "create",
+				DocumentID: record.Date,
+				Body:       bytes.NewReader(data),
 				OnSuccess: func(ctx context.Context, item esutil.BulkIndexerItem, res esutil.BulkIndexerResponseItem) {
 					atomic.AddUint64(&indexer.countSuccessful, 1)
 				},
@@ -48,7 +49,7 @@ func (indexer *Indexer) Do(records []*pm.WeatherRecord) {
 					if err != nil {
 						log.Printf("ERROR: %s", err)
 					} else {
-						log.Printf("ERROR: %s: %s", res.Error.Type, res.Error.Reason)
+						log.Printf("WARN: %s: %s", res.Error.Type, res.Error.Reason)
 					}
 				},
 			})
@@ -94,22 +95,20 @@ func (indexer *Indexer) createBulkIndexer() (esutil.BulkIndexer, error) {
 
 func (indexer *Indexer) printReport(bi esutil.BulkIndexer, dur time.Duration) {
 	biStats := bi.Stats()
-
 	log.Println(strings.Repeat("▔", 65))
-
 	if biStats.NumFailed > 0 {
 		log.Fatalf(
-			"Indexed [%d] documents with [%d] errors in %d (%d docs/sec)",
+			"Indexed [%d] documents with [%d] warnings in %d ms (%d docs/sec)",
 			int64(biStats.NumFlushed),
 			int64(biStats.NumFailed),
-			dur.Truncate(time.Millisecond),
+			dur.Truncate(time.Millisecond).Milliseconds(),
 			int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
 		)
 	} else {
 		log.Printf(
-			"Sucessfuly indexed [%d] documents in %d (%d docs/sec)",
+			"Sucessfuly indexed [%d] documents in %d ms (%d docs/sec)",
 			int64(biStats.NumFlushed),
-			dur.Truncate(time.Millisecond),
+			dur.Truncate(time.Millisecond).Milliseconds(),
 			int64(1000.0/float64(dur/time.Millisecond)*float64(biStats.NumFlushed)),
 		)
 	}
